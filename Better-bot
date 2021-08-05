@@ -1,0 +1,110 @@
+const Discord = require("discord.js"); //baixar a lib
+const client = new Discord.Client(); 
+const config = require("./config.json"); 
+
+
+client.on("ready", () => {
+  console.log(`Bot foi iniciado, com ${client.users.size} usuários, em ${client.channels.size} canais, em ${client.guilds.size} servidores.`); 
+  client.user.setPresence({ game: { name: 'comando', type: 1, url: 'https://www.twitch.tv/pedroricardo'} });
+    //0 = Jogando
+    //  1 = Transmitindo
+    //  2 = Ouvindo
+    //  3 = Assistindo
+});
+
+client.on("message", async message => {
+
+    if(message.author.bot) return;
+    if(message.channel.type === "dm") return;
+    if(!message.content.startsWith(config.prefix)) return;
+
+  const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+  const comando = args.shift().toLowerCase();
+  
+  // coamdno ping
+  if(comando === "ping") {
+    const m = await message.channel.send("Ping?");
+    m.edit(`Ping! A Latência é ${m.createdTimestamp - message.createdTimestamp}ms. A Latencia da API é ${Math.round(client.ping)}ms`);
+  }
+  
+});
+
+client.on("message", async message => {
+
+    if(message.author.bot) return;
+    if(message.channel.type === "dm") return;
+    if(!message.content.startsWith(config.prefix)) return;
+  
+  const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+  const comando = args.shift().toLowerCase();
+  
+  if (comando === "apng"){
+    
+  let info = {filename: "emoji.gif"}  
+  let [nome, emojilink] = args
+  if(!args[0]) return message.reply("Você esqueceu de definir os argumentos\n !apng <nome> <link.gif>");
+  if(!args[1]) return message.channel.send("Você esqueceu de definir o link do emoji\n !apng <nome> <link.gif>");
+    
+    download(emojilink, info, function(err){
+      if (!err)  {
+      console.log("gif identificado")
+      toApng('emoji.gif')
+     .then(() => {
+       message.guild.createEmoji('emoji.png', nome)
+       message.channel.send("O gif-emoji foi convertido para o modo NITRO-Pobre é adicionado!!!")
+      })
+     .catch(error => console.log('não consegui converter a imagem💀', error))
+      }else {
+        message.channel.send("Link invalido")
+      }
+    })
+    
+  
+  }
+
+});
+
+client.on("ready", () => {
+  let activities = [
+        `Utilize ${config.prefix} para executar meus comandos.`,
+        `Bot focado na administração do servidor`,
+        `${client.users.cache.size} usuários.`
+  ],
+  i = 0;
+   setInterval(() => client.user.setActivity(`${activities[i++ %
+   activities.length]}`, {
+     type: "WATCHING"
+   }), 15000); //WATCHING, LISTENING, PLAYING, STREAMING
+   console.log("Estou Online!")
+  });
+
+const { Client, Message } = require("discord.js")
+
+module.exports = {
+  name: "ticket by awlogod",
+
+  run: async(client, message, args) => {
+
+    message.delet()
+
+    const awlo = message.guild.channels.cache.find(ch => ch.name ===  `${message.author.id} `);
+
+    if (awlo) return message.channel.send( `:x: | ${message.author} Seu ticket está aberto em: ${awlo}!`).then(msg => msg.delete({timeout: 1500}));
+
+     message.guild.channels.create( `${message.author.id}`, {
+       type : 'text',
+       permissionOverwrites : [
+         {
+           id : message.guild.id,
+           deny : ['VIEW_CHANNEL', 'SEND_MESSAGES', 'ATTACH_FILES']
+         }
+       ]
+     
+   }).then(async channels=> {
+     message.channel.send(`✅ | ${message.author} Ticket criado com sucesso: ${channel}`).then(msg => msg.delet({timeout: 1500}));
+     channel.send(`👋 | Olá ${message.author}, este é o seu ticket! \n👋 | Caso queira fechar seu ticket, utilize **!close**.` )
+   })
+  }
+}
+
+client.login(config.token);
